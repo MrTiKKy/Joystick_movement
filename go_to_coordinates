@@ -1,0 +1,359 @@
+#define dirPin1 2
+#define stepPin1 3
+#define dirPin2 12
+#define stepPin2 11
+#define xpin A0
+#define ypin A1
+#define deadZone 50
+#define bp 4
+#define ls1 6
+#define ls2 10
+#define ls3 8
+#define ls4 9
+int xstep = 0, ystep = 0, excoory = 0, excoorx = 0;
+int speed = 900;
+int speedoblic = 700;
+int coorx = 0, coory = 0;
+int cnty = 0, cntx = 0;
+int c = 0;
+ 
+void go_home();
+ 
+void setup() {
+  Serial.begin(9600);
+  pinMode(dirPin1, OUTPUT);
+  pinMode(dirPin2, OUTPUT);
+  pinMode(stepPin1, OUTPUT);
+  pinMode(stepPin2, OUTPUT);
+  digitalWrite(dirPin1, HIGH);
+  digitalWrite(dirPin2, HIGH);
+  pinMode(bp, INPUT_PULLUP);
+  pinMode(ls1, INPUT_PULLUP);
+  pinMode(ls2, INPUT_PULLUP);
+  pinMode(ls3, INPUT_PULLUP);
+  pinMode(ls4, INPUT_PULLUP);
+  Serial.setTimeout(100000);
+  go_home();
+}
+//////////////////////////////////////////////////////////////////////////////////////////////
+void stanga_sus(int steps)
+{
+  digitalWrite(dirPin2, LOW);
+  for (int i = 0; i < steps; i++) {
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(speedoblic);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(speedoblic);
+    cnty-=1;
+  }
+}
+ 
+void dreapta_sus(int steps)
+{
+  digitalWrite(dirPin1, HIGH);
+  for (int i = 0; i < steps; i++) {
+ 
+    if(digitalRead(ls2) == LOW || digitalRead(ls3) == LOW || digitalRead(ls1) == LOW || digitalRead(ls4) == LOW)
+  {
+    Serial.println("The Robot has reached it's limit, returning home...");
+    go_home();
+   
+  }
+ 
+    digitalWrite(stepPin1, HIGH);
+    delayMicroseconds(speedoblic);
+    digitalWrite(stepPin1, LOW);
+    delayMicroseconds(speedoblic);
+    cntx+=1;
+  }
+}
+ 
+void stanga_jos(int steps)
+{
+  digitalWrite(dirPin1, LOW);
+  for (int i = 0; i < steps; i++) {
+    digitalWrite(stepPin1, HIGH);
+    delayMicroseconds(speedoblic);
+    digitalWrite(stepPin1, LOW);
+    delayMicroseconds(speedoblic);
+    cntx-=1;
+  }
+}
+ 
+void dreapta_jos(int steps)
+{
+  digitalWrite(dirPin2, HIGH);
+  for (int i = 0; i < steps; i++) {
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(speedoblic);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(speedoblic);
+    cnty+=1;
+  }
+}
+///////////////////////////////////////////////////////////////////////////////////////////
+void fata(int steps)
+{
+  digitalWrite(dirPin1, HIGH);
+  digitalWrite(dirPin2, LOW);
+  for(int i=0;i<=steps;i++)
+  {
+ 
+    if(digitalRead(ls2) == LOW || digitalRead(ls3) == LOW)
+  {
+    Serial.println("The Robot has reached it's limit, returning home...");
+    go_home();
+  }
+ 
+    digitalWrite(stepPin1, HIGH);
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(speed);
+    digitalWrite(stepPin1, LOW);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(speed);
+    cntx+=1;
+    cnty-=1;
+  }
+}
+ 
+void spate(int steps)
+{
+  digitalWrite(dirPin1, LOW);
+  digitalWrite(dirPin2, HIGH);
+  for(int i=0;i<=steps;i++)
+  {
+    digitalWrite(stepPin1, HIGH);
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(speed);
+    digitalWrite(stepPin1, LOW);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(speed);
+    cntx-=1;
+    cnty+=1;
+  }
+}
+ 
+void stanga(int steps)
+{
+  digitalWrite(dirPin1, LOW);
+  digitalWrite(dirPin2, LOW);
+  for(int i=0;i<=steps;i++)
+  {
+    digitalWrite(stepPin1, HIGH);
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(speed);
+    digitalWrite(stepPin1, LOW);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(speed);
+    cnty-=1;
+    cntx-=1;
+  }
+}
+ 
+void dreapta(int steps)
+{
+  digitalWrite(dirPin1, HIGH);
+  digitalWrite(dirPin2, HIGH);
+  for(int i=0;i<=steps;i++)
+  {
+ 
+    if(digitalRead(ls2) == LOW || digitalRead(ls3) == LOW)
+  {
+    Serial.println("The Robot has reached it's limit, returning home...");
+    go_home();
+  }
+ 
+    digitalWrite(stepPin1, HIGH);
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(speed);
+    digitalWrite(stepPin1, LOW);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(speed);
+    cntx+=1;
+    cnty+=1;
+  }
+}
+ 
+void convert(int coorx, int coory)
+{
+ 
+  int aux_x = coorx*51;
+  int aux_y = coory*50;
+ 
+  xstep = abs(aux_y + aux_x);
+  ystep = abs(aux_y - aux_x);
+ 
+}
+ 
+void go_to(int coorx, int coory)
+{
+ 
+  convert(coorx, coory);
+ 
+  Serial.print("The Robot will go to X(");
+  Serial.print(coorx);
+  Serial.print(", ");
+  Serial.print(coory);
+  Serial.println(")");
+ 
+  if(coorx>0 && coory>0)
+{
+  Serial.println("1");
+    if(abs(coorx) > abs(coory))
+      {
+        dreapta(min(xstep, ystep));
+        if(xstep < ystep)
+        dreapta_jos(max(xstep, ystep)-min(xstep, ystep));
+        else
+        dreapta_sus(max(xstep, ystep)-min(xstep, ystep));
+ 
+      }
+      else
+      {
+        fata(min(xstep, ystep));
+        if(xstep > ystep)
+        dreapta_sus(max(xstep, ystep)-min(xstep, ystep));
+        else
+        stanga_sus(max(xstep, ystep)-min(xstep, ystep));
+ 
+      }
+}
+  if(coorx<0 && coory>0)
+  {
+    Serial.println("2");
+      if(abs(coorx) > abs(coory))
+      {
+        stanga(min(xstep, ystep));
+        if(xstep < ystep)
+        stanga_jos(max(xstep, ystep)-min(xstep, ystep));
+        else
+        stanga_sus(max(xstep, ystep)-min(xstep, ystep));
+ 
+      }
+      else
+      {
+        fata(min(xstep, ystep));
+        if(xstep > ystep)
+        dreapta_sus(max(xstep, ystep)-min(xstep, ystep));
+        else
+        stanga_sus(max(xstep, ystep)-min(xstep, ystep));
+ 
+      }
+  }
+ 
+  if(coorx<0 && coory<0)
+  {
+    Serial.println("3");
+      if(abs(coorx) > abs(coory))
+      {
+        stanga(min(xstep, ystep));
+        if(xstep < ystep)
+        stanga_sus(max(xstep, ystep)-min(xstep, ystep));
+        else
+        stanga_jos(max(xstep, ystep)-min(xstep, ystep));
+ 
+      }
+      else
+      {
+        spate(min(xstep, ystep));
+        if(xstep > ystep)
+        stanga_jos(max(xstep, ystep)-min(xstep, ystep));
+        else
+        dreapta_jos(max(xstep, ystep)-min(xstep, ystep));
+ 
+      }
+  }
+ 
+  if(coorx>0 && coory<0)
+  {
+    Serial.println("4");
+      if(abs(coorx) > abs(coory))
+      {
+        dreapta(min(xstep, ystep));
+        if(xstep < ystep)
+        dreapta_jos(max(xstep, ystep)-min(xstep, ystep));
+        else
+        dreapta_sus(max(xstep, ystep)-min(xstep, ystep));
+ 
+      }
+      else
+      {
+        spate(min(xstep, ystep));
+        if(xstep > ystep)
+        stanga_jos(max(xstep, ystep)-min(xstep, ystep));
+        else
+        dreapta_jos(max(xstep, ystep)-min(xstep, ystep));
+ 
+      }
+  }
+ 
+  if(coorx == 0 || coory == 0)
+  {
+    if(coorx == 0)
+    {
+      if(coory>0) fata(ystep);
+      else spate(ystep);
+    }
+    else {
+      if(coorx>0) dreapta(xstep);
+      else stanga(xstep);
+    }
+ 
+  }
+ 
+ }
+ 
+void go_home()
+{
+ 
+
+  do
+  {
+    spate(1);
+  }while(digitalRead(ls4) == HIGH);
+ 
+  do
+  {
+    stanga(1);
+  }while(digitalRead(ls1) == HIGH);
+ 
+  fata(95);
+  dreapta(23);
+}
+ 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+void loop() {
+ 
+  Serial.println("Write the coordinates you want the robot to go to (between (0,0) and (28,26)) : ");
+  Serial.print("x coordinates: ");
+  while (Serial.available() == 0) {
+  }
+  coorx = Serial.parseInt();
+ 
+  Serial.println(coorx);  
+  Serial.print("y coordinate: ");
+  while (Serial.available() == 0) {
+  }
+  coory = Serial.parseInt();
+ 
+  Serial.println(coory);
+ 
+  if(coorx > 28)
+  {
+    coorx = 28;
+    Serial.println("The coordinates you have given the robot are out of it's limits. The Robot will go to it's maximum limits.");
+    c = 1;
+  }
+  if(coory > 26)
+  {
+    coory = 26;
+    if(c == 0) Serial.println("The coordinates you have given the robot are out of it's limits. The Robot will go to it's maximum limits.");
+  }
+ 
+  go_to(coorx-excoorx, coory-excoory);
+ 
+  excoorx = coorx;
+  excoory = coory;
+ 
+  c = 0;
+  }
