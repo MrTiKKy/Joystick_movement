@@ -1,0 +1,479 @@
+#define dirPin1 2
+#define stepPin1 3
+#define dirPin2 12
+#define stepPin2 11
+#define xpin A0
+#define ypin A1
+#define deadZone 50
+#define bp 4
+#define ls1 6
+#define ls2 10
+#define ls3 8
+#define ls4 9
+int xstep = 0, ystep = 0;
+int speed = 900;
+int speedoblic = 700;
+ 
+void setup() {
+  Serial.begin(9600);
+  pinMode(dirPin1, OUTPUT);
+  pinMode(dirPin2, OUTPUT);
+  pinMode(stepPin1, OUTPUT);
+  pinMode(stepPin2, OUTPUT);
+  digitalWrite(dirPin1, HIGH);
+  digitalWrite(dirPin2, HIGH);
+  pinMode(bp, INPUT_PULLUP);
+  pinMode(ls1, INPUT_PULLUP);
+  pinMode(ls2, INPUT_PULLUP);
+  pinMode(ls3, INPUT_PULLUP);
+  pinMode(ls4, INPUT_PULLUP);
+ 
+}
+ 
+void oblic(int dirPin, int stepPin, int steps, int direction)
+{
+  digitalWrite(dirPin, direction);
+  for (int i = 0; i < steps; i++) {
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(speedoblic);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(speedoblic);
+  }
+}
+//////////////////////////////////////////////////////////////////////////////////////////////
+void stanga_sus(int steps)
+{
+  digitalWrite(dirPin2, LOW);
+  for (int i = 0; i < steps; i++) {
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(speedoblic);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(speedoblic);
+  }
+}
+ 
+void dreapta_sus(int steps)
+{
+  digitalWrite(dirPin1, HIGH);
+  for (int i = 0; i < steps; i++) {
+    digitalWrite(stepPin1, HIGH);
+    delayMicroseconds(speedoblic);
+    digitalWrite(stepPin1, LOW);
+    delayMicroseconds(speedoblic);
+  }
+}
+ 
+void stanga_jos(int steps)
+{
+  digitalWrite(dirPin1, LOW);
+  for (int i = 0; i < steps; i++) {
+    digitalWrite(stepPin1, HIGH);
+    delayMicroseconds(speedoblic);
+    digitalWrite(stepPin1, LOW);
+    delayMicroseconds(speedoblic);
+  }
+}
+ 
+void dreapta_jos(int steps)
+{
+  digitalWrite(dirPin2, HIGH);
+  for (int i = 0; i < steps; i++) {
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(speedoblic);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(speedoblic);
+  }
+}
+///////////////////////////////////////////////////////////////////////////////////////////
+void fata(int steps)
+{
+  digitalWrite(dirPin1, HIGH);
+  digitalWrite(dirPin2, LOW);
+  for(int i=0;i<=steps;i++)
+  {
+    digitalWrite(stepPin1, HIGH);
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(speed);
+    digitalWrite(stepPin1, LOW);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(speed);
+    xstep+=1;
+    ystep-=1;
+  }
+}
+ 
+void spate(int steps)
+{
+  digitalWrite(dirPin1, LOW);
+  digitalWrite(dirPin2, HIGH);
+  for(int i=0;i<=steps;i++)
+  {
+    digitalWrite(stepPin1, HIGH);
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(speed);
+    digitalWrite(stepPin1, LOW);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(speed);
+    xstep-=1;
+    ystep+=1;
+  }
+}
+ 
+void stanga(int steps)
+{
+  digitalWrite(dirPin1, LOW);
+  digitalWrite(dirPin2, LOW);
+  for(int i=0;i<=steps;i++)
+  {
+    digitalWrite(stepPin1, HIGH);
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(speed);
+    digitalWrite(stepPin1, LOW);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(speed);
+    ystep-=1;
+    xstep-=1;
+  }
+}
+ 
+void dreapta(int steps)
+{
+  digitalWrite(dirPin1, HIGH);
+  digitalWrite(dirPin2, HIGH);
+  for(int i=0;i<=steps;i++)
+  {
+    digitalWrite(stepPin1, HIGH);
+    digitalWrite(stepPin2, HIGH);
+    delayMicroseconds(speed);
+    digitalWrite(stepPin1, LOW);
+    digitalWrite(stepPin2, LOW);
+    delayMicroseconds(speed);
+    ystep+=1;
+    xstep+=1;
+  }
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+void loop() {
+ 
+  int x = -(analogRead(xpin)-328);  
+  int y = -(analogRead(ypin)-332);
+ 
+  if (abs(x) < deadZone) x = 0;
+  if (abs(y) < deadZone) y = 0;
+ 
+  // Serial.print("x = ");
+  // Serial.println(x);
+  // Serial.print("y = ");
+  // Serial.println(y);
+ 
+ 
+ 
+ 
+  if(digitalRead(ls1) == LOW){   //ls stanga
+      if(x>0 && y==0)
+        {
+          fata(10);
+        }
+ 
+        if(x<0 && y==0)
+        {
+          spate(10);
+        }
+ 
+        // if(y<0 && x==0)
+        // {
+        //   stanga();
+        // }
+ 
+        if(y>0 && x==0)
+        {
+          dreapta(10);
+        }
+ 
+        if(x<0 && y>0)
+        {
+          dreapta_jos(10);
+          ystep+=10;
+        }
+ 
+          if(x>0 && y>0)
+        {
+            dreapta_sus(10);
+            xstep+=10;
+        }
+ 
+        //   if(x>0 && y<0)
+        // {
+        //     stanga_sus();
+        //     ystep-=10;
+        // }
+ 
+        //   if(x<0 && y<0)
+        // {
+        //     stanga_jos();
+        //     xstep-=10;
+        // }
+  }
+  else if(digitalRead(ls2) == LOW ){   //ls dreapta
+      if(x>0 && y==0)
+        {
+          fata(10);
+        }
+ 
+        if(x<0 && y==0)
+        {
+          spate(10);
+        }
+ 
+        if(y<0 && x==0)
+        {
+          stanga(10);
+        }
+ 
+        // if(y>0 && x==0)
+        // {
+        //   dreapta();
+        // }
+ 
+        // if(x<0 && y>0)
+        // {
+        //   stanga_sus();
+        //   ystep+=10;
+        // }
+ 
+        //   if(x>0 && y>0)
+        // {
+        //     dreapta_sus();
+        //     xstep+=10;
+        // }
+ 
+          if(x>0 && y<0)
+        {
+            stanga_sus(10);
+            ystep-=10;
+        }
+ 
+          if(x<0 && y<0)
+        {
+            stanga_jos(10);
+            xstep-=10;
+        }
+       }
+  else if(digitalRead(ls3) == LOW){   //ls fata
+      // if(x>0 && y==0)
+      //   {
+      //     fata();
+      //   }
+ 
+        if(x<0 && y==0)
+        {
+          spate(10);
+        }
+ 
+        if(y<0 && x==0)
+        {
+          stanga(10);
+        }
+ 
+        if(y>0 && x==0)
+        {
+          dreapta(10);
+        }
+ 
+        if(x<0 && y>0)
+        {
+          dreapta_jos(10);
+          ystep+=10;
+        }
+ 
+        //   if(x>0 && y>0)
+        // {
+        //     dreapta_sus();
+        //     xstep+=10;
+        // }
+ 
+        //   if(x>0 && y<0)
+        // {
+        //     dreapta_jos();
+        //     ystep-=10;
+        // }
+ 
+          if(x<0 && y<0)
+        {
+            stanga_jos(10);
+            xstep-=10;
+        }
+      }
+  else if(digitalRead(ls4) == LOW){   //ls spate
+      if(x>0 && y==0)
+        {
+          fata(10);
+        }
+ 
+        // if(x<0 && y==0)
+        // {
+        //   spate();
+        // }
+ 
+        if(y<0 && x==0)
+        {
+          stanga(10);
+        }
+ 
+        if(y>0 && x==0)
+        {
+          dreapta(10);
+        }
+ 
+        // if(x<0 && y>0)
+        // {
+        //   stanga_sus();
+        //   ystep+=10;
+        // }
+ 
+          if(x>0 && y>0)
+        {
+            dreapta_sus(10);
+            xstep+=10;
+        }
+ 
+          if(x>0 && y<0)
+        {
+            stanga_sus(10);
+            ystep-=10;
+        }
+ 
+        //   if(x<0 && y<0)
+        // {
+        //     stanga_jos();
+        //     xstep-=10;
+        // }
+        }
+ 
+else
+{
+  if(x>0 && y==0)
+  {
+   fata(10);
+  }
+ 
+  if(x<0 && y==0)
+  {
+    spate(10);
+  }
+ 
+  if(y<0 && x==0)
+  {
+     
+    stanga(10);
+  }
+ 
+  if(y>0 && x==0)
+  {
+    dreapta(10);
+  }
+ 
+  if(x<0 && y>0)
+  {
+    Serial.println("dreapta_jos");
+    dreapta_jos(10);
+    ystep+=10;
+  }
+ 
+    if(x>0 && y>0)
+  {
+      dreapta_sus(10);
+      xstep+=10;
+  }
+ 
+    if(x>0 && y<0)
+  {
+      stanga_sus(10);
+      ystep-=10;
+  }
+ 
+    if(x<0 && y<0)
+  {
+      stanga_jos(10);
+      xstep-=10;
+  }
+}
+ 
+  if (digitalRead(bp) == LOW) {  
+    Serial.println("Button pressed, returning to start position.");
+ 
+      if(xstep>=0 && ystep>=0)
+      {
+        Serial.print("The Robot was located at X(");
+        Serial.print(xstep/100+ystep/100);
+        Serial.print(", ");
+        Serial.print(xstep/100-ystep/100);
+        Serial.println(")");
+ 
+        stanga(min(abs(xstep), abs(ystep)));
+        if(xstep < ystep)
+        stanga_sus(max(abs(xstep), abs(ystep))-min(abs(xstep), abs(ystep)));
+        else
+        stanga_jos(max(abs(xstep), abs(ystep))-min(abs(xstep), abs(ystep)));
+ 
+      }
+ 
+      else if(xstep<=0 && ystep<=0)
+      {
+ 
+         Serial.print("The Robot was located at X(");
+        Serial.print(xstep/100+ystep/100);
+        Serial.print(", ");
+        Serial.print(xstep/100-ystep/100);
+        Serial.println(")");
+ 
+        dreapta(min(abs(xstep), abs(ystep)));
+         if(abs(xstep) > abs(ystep))
+        dreapta_sus(max(abs(xstep), abs(ystep))-min(abs(xstep), abs(ystep)));
+        else
+        dreapta_jos(max(abs(xstep), abs(ystep))-min(abs(xstep), abs(ystep)));
+ 
+      }
+ 
+      else if(xstep>=0 && ystep<=0)
+      {
+ 
+         Serial.print("The Robot was located at X(");
+        Serial.print(xstep/100+ystep/100);
+        Serial.print(", ");
+        Serial.print(xstep/100-ystep/100);
+        Serial.println(")");
+ 
+        spate(min(abs(xstep), abs(ystep)));
+        if(abs(xstep) > abs(ystep))
+        stanga_jos(max(abs(xstep), abs(ystep))-min(abs(xstep), abs(ystep)));
+        else
+        dreapta_jos(max(abs(xstep), abs(ystep))-min(abs(xstep), abs(ystep)));
+ 
+      }
+ 
+      else if(xstep<=0 && ystep>=0)
+      {
+ 
+         Serial.print("The Robot was located at X(");
+        Serial.print(xstep/100+ystep/100);
+        Serial.print(", ");
+        Serial.print(xstep/100-ystep/100);
+        Serial.println(")");
+ 
+        fata(min(abs(xstep), abs(ystep)));
+        if(xstep < ystep)
+        stanga_sus(max(abs(xstep), abs(ystep))-min(abs(xstep), abs(ystep)));
+        else
+        dreapta_sus(max(abs(xstep), abs(ystep))-min(abs(xstep), abs(ystep)));
+ 
+      }
+    xstep = 0;  
+    ystep = 0;
+    Serial.println("Returned to start position.");
+    delay(1000);  
+  }
+ 
+
+ 
+}
